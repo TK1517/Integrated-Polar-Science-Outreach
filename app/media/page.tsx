@@ -88,14 +88,14 @@ export default async function MediaPage({
           <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {data.map((item) => (
               <MediaCard
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                description={item.description}
-                mediaType={item.media_type}
-                thumbnailUrl={item.thumbnail_url}
-                publishedDate={item.published_date}
-              />
+  key={item.id}
+  id={item.id}
+  title={item.title}
+  description={item.description}
+  mediaType={item.media_type}
+  thumbnailUrl={item.thumbnail_url}
+  publishedDate={item.published_date}
+/>
             ))}
           </div>
         ) : (

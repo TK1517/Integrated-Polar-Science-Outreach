@@ -2,72 +2,98 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-slate-950 text-white">
-      <div className="mx-auto max-w-7xl px-6 py-14">
+    <footer className="relative overflow-hidden border-t border-white/10 bg-slate-950">
+      {/* Subtle polar glow */}
+      <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 bottom-0 h-56 w-56 rounded-full bg-cyan-400/5 blur-3xl" />
 
-        <div className="grid gap-10 md:grid-cols-4">
+      <div className="relative mx-auto max-w-7xl px-6 py-10">
+        <div className="grid gap-8 md:grid-cols-[1.5fr_1fr_1fr]">
 
-          <div className="md:col-span-2">
-            <h2 className="text-xl font-semibold">
+          {/* Brand */}
+          <div>
+            <Link
+              href="/"
+              className="text-lg font-semibold tracking-tight text-white transition hover:text-sky-300"
+            >
               Polar Science Portal
-            </h2>
+            </Link>
 
-            <p className="mt-4 max-w-md text-sm leading-6 text-slate-400">
-              A unified digital gateway for exploring polar science,
-              research, expeditions, knowledge and media.
+            <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+              Explore polar science, research, expeditions, knowledge and
+              media from the Arctic and Antarctica.
             </p>
           </div>
 
+          {/* Explore */}
           <div>
-            <h3 className="font-medium">
+            <h3 className="text-sm font-semibold text-white">
               Explore
             </h3>
 
-            <div className="mt-4 space-y-3 text-sm text-slate-400">
-              <Link className="block hover:text-white" href="/knowledge">
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              <Link
+                href="/knowledge"
+                className="text-slate-500 transition hover:text-sky-300"
+              >
                 Knowledge
               </Link>
 
-              <Link className="block hover:text-white" href="/publications">
+              <Link
+                href="/publications"
+                className="text-slate-500 transition hover:text-sky-300"
+              >
                 Research
               </Link>
 
-              <Link className="block hover:text-white" href="/expeditions">
+              <Link
+                href="/expeditions"
+                className="text-slate-500 transition hover:text-sky-300"
+              >
                 Expeditions
               </Link>
 
-              <Link className="block hover:text-white" href="/media">
+              <Link
+                href="/media"
+                className="text-slate-500 transition hover:text-sky-300"
+              >
                 Media
               </Link>
             </div>
           </div>
 
+          {/* Portal */}
           <div>
-            <h3 className="font-medium">
+            <h3 className="text-sm font-semibold text-white">
               Portal
             </h3>
 
-            <div className="mt-4 space-y-3 text-sm text-slate-400">
-              <Link className="block hover:text-white" href="/about">
-                About
-              </Link>
-
-              <Link className="block hover:text-white" href="/search">
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              <Link
+                href="/search"
+                className="text-slate-500 transition hover:text-sky-300"
+              >
                 Search
               </Link>
 
-              <Link className="block hover:text-white" href="/admin">
+              <Link
+                href="/admin"
+                className="text-slate-500 transition hover:text-sky-300"
+              >
                 Admin
               </Link>
             </div>
           </div>
-
         </div>
 
-        <div className="mt-12 border-t border-slate-800 pt-6 text-sm text-slate-500">
-          © 2026 Polar Science Portal. MVP demonstration.
-        </div>
+        {/* Bottom */}
+        <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 Polar Science Portal</p>
 
+          <p>
+            Integrated Polar Science Outreach
+          </p>
+        </div>
       </div>
     </footer>
   );

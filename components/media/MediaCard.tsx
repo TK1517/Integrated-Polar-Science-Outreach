@@ -5,7 +5,6 @@ type MediaCardProps = {
   title: string;
   description: string | null;
   mediaType: string | null;
-  region: string | null;
   thumbnailUrl: string | null;
   publishedDate: string | null;
 };
@@ -15,7 +14,6 @@ export default function MediaCard({
   title,
   description,
   mediaType,
-  region,
   thumbnailUrl,
   publishedDate,
 }: MediaCardProps) {
@@ -46,11 +44,6 @@ export default function MediaCard({
             {mediaType || "Media"}
           </span>
 
-          {region && (
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
-              {region}
-            </span>
-          )}
         </div>
 
         <h2 className="mt-4 text-xl font-semibold leading-7 text-slate-900 group-hover:text-sky-700">
