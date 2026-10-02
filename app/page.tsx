@@ -1,69 +1,124 @@
-import Image from "next/image";
+import { supabase } from "@/lib/supabase/client";
+import Hero from "@/components/home/Hero";
+import Stats from "@/components/home/Stats";
+import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
+  const { data: knowledge, error } = await supabase
+    .from("knowledge_resources")
+    .select("*")
+    .eq("published", true)
+    .order("published_date", { ascending: false })
+    .limit(3);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      <Hero />
+
+      <Stats />
+
+      <section className="mx-auto max-w-7xl px-6 py-20">
+
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-sm font-medium text-sky-600">
+              KNOWLEDGE REPOSITORY
+            </p>
+
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+              Explore Polar Knowledge
+            </h2>
+
+            <p className="mt-3 max-w-xl text-slate-500">
+              Discover educational resources, research summaries and
+              scientific knowledge from the polar regions.
+            </p>
+          </div>
+
+          <Link
+            href="/knowledge"
+            className="hidden text-sm font-medium text-sky-600 md:block"
+          >
+            View all →
+          </Link>
+        </div>
+
+        {error ? (
+          <div className="mt-10 rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+            Unable to load knowledge resources.
+          </div>
+        ) : (
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+
+            {knowledge?.map((item) => (
+              <Link
+                href={`/knowledge/${item.id}`}
+                key={item.id}
+                className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-slate-300"
+              >
+
+                <div className="text-xs font-medium uppercase tracking-wider text-sky-600">
+                  {item.category}
+                </div>
+
+                <h3 className="mt-4 text-xl font-semibold text-slate-900">
+                  {item.title}
+                </h3>
+
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+                  {item.description}
+                </p>
+
+                <div className="mt-6 text-sm font-medium text-slate-900">
+                  Read resource →
+                </div>
+
+              </Link>
+            ))}
+
+          </div>
+        )}
+
+      </section>
+
+      <section className="border-y border-slate-200 bg-slate-100">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+
+          <p className="text-sm font-medium text-sky-600">
+            POLAR RESEARCH
           </p>
+
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+            Science beyond boundaries
+          </h2>
+
+          <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+            Explore research, expeditions and scientific observations
+            that help us understand some of the most important
+            environments on Earth.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-4">
+
+            <Link
+              href="/publications"
+              className="rounded-lg bg-slate-950 px-5 py-3 text-sm font-medium text-white"
+            >
+              Browse Research
+            </Link>
+
+            <Link
+              href="/expeditions"
+              className="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-medium"
+            >
+              Explore Expeditions
+            </Link>
+
+          </div>
+
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+    </>
   );
 }
