@@ -152,11 +152,16 @@ export default function EditPublicationForm({
                     Region
                   </label>
 
-                  <input
-                    name="region"
-                    defaultValue={publication.region || ""}
-                    className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none focus:border-sky-500"
-                  />
+                  <select
+  name="region"
+  defaultValue={publication.region || ""}
+  className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none focus:border-sky-400"
+>
+  <option value="">Select region</option>
+  <option value="Arctic">Arctic</option>
+  <option value="Antarctica">Antarctica</option>
+  <option value="Both">Both</option>
+</select>
                 </div>
 
                 <div>
