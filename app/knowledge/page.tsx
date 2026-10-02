@@ -2,6 +2,9 @@ import { supabase } from "@/lib/supabase/client";
 import KnowledgeCard from "@/components/knowledge/KnowledgeCard";
 import KnowledgeFilters from "@/components/knowledge/KnowledgeFilters";
 
+import Reveal from "@/components/ui/Reveal";
+import GlassCard from "@/components/ui/GlassCard";
+
 type KnowledgePageProps = {
   searchParams: Promise<{
     search?: string;
@@ -50,87 +53,122 @@ export default async function KnowledgePage({
   const { data, error } = await query;
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-950">
 
-      {/* Header */}
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-16">
+      {/* Hero */}
+      <section className="relative overflow-hidden border-b border-white/10 bg-slate-950">
+        <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
 
-          <p className="text-sm font-semibold uppercase tracking-wider text-sky-600">
-            Knowledge Repository
-          </p>
+        <div className="pointer-events-none absolute right-0 top-10 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
 
-          <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
-            Explore Polar Science
-          </h1>
+        <div className="relative mx-auto max-w-7xl px-6 py-14 md:py-16">
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-400">
+              Knowledge Repository
+            </p>
 
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-500">
-            Discover scientific knowledge, educational resources,
-            research summaries and information from the Arctic and
-            Antarctic regions.
-          </p>
+            <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-white md:text-5xl">
+              Explore Polar Science
+            </h1>
 
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">
+              Discover scientific knowledge, educational resources,
+              research summaries and information from the Arctic and
+              Antarctic regions.
+            </p>
+          </Reveal>
         </div>
       </section>
 
       {/* Content */}
-      <section className="mx-auto max-w-7xl px-6 py-12">
+      <section className="relative overflow-hidden bg-slate-950 px-6 py-10 md:py-12">
+        <div className="pointer-events-none absolute left-1/3 top-20 h-80 w-80 rounded-full bg-sky-500/5 blur-3xl" />
 
-        <KnowledgeFilters />
+        <div className="relative mx-auto max-w-7xl">
 
-        <div className="mt-10 flex items-center justify-between">
+          {/* Filters */}
+          <Reveal>
+            <GlassCard className="border-white/10 bg-white/[0.04] p-4 md:p-5">
+              <KnowledgeFilters />
+            </GlassCard>
+          </Reveal>
 
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">
-              Knowledge Resources
-            </h2>
+          {/* Heading */}
+          <Reveal delay={0.08}>
+            <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-400">
+                  Resources
+                </p>
 
-            <p className="mt-1 text-sm text-slate-500">
-              {data?.length || 0} resources found
-            </p>
-          </div>
+                <h2 className="mt-1 text-xl font-semibold text-white md:text-2xl">
+                  Knowledge Resources
+                </h2>
+              </div>
+
+              <p className="text-xs text-slate-500">
+                {data?.length || 0} resources found
+              </p>
+            </div>
+          </Reveal>
+
+          {/* Error */}
+          {error ? (
+            <Reveal>
+              <div className="mt-6 rounded-xl border border-red-400/20 bg-red-400/10 p-5 text-sm text-red-300">
+                <p className="font-medium">
+                  Unable to load knowledge resources.
+                </p>
+
+                <p className="mt-1 text-red-400/80">
+                  {error.message}
+                </p>
+              </div>
+            </Reveal>
+          ) : data && data.length > 0 ? (
+            /* Cards */
+            <div className="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {data.map((item, index) => (
+                <Reveal
+                  key={item.id}
+                  delay={index * 0.06}
+                >
+                  <div className="h-full">
+                    <KnowledgeCard
+                      id={item.id}
+                      title={item.title}
+                      description={item.description}
+                      category={item.category}
+                      resourceType={item.resource_type}
+                      region={item.region}
+                      publishedDate={item.published_date}
+                    />
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          ) : (
+            /* Empty state */
+            <Reveal>
+              <div className="mt-7 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-10 text-center backdrop-blur-xl">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-sky-300/20 bg-sky-300/10 text-lg text-sky-300">
+                  ◌
+                </div>
+
+                <h3 className="mt-4 text-base font-semibold text-white">
+                  No resources found
+                </h3>
+
+                <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-500">
+                  Try changing your search or filters to discover
+                  other polar science resources.
+                </p>
+              </div>
+            </Reveal>
+          )}
 
         </div>
-
-        {error ? (
-          <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-            Unable to load knowledge resources.
-            <br />
-            {error.message}
-          </div>
-        ) : data && data.length > 0 ? (
-          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-
-            {data.map((item) => (
-              <KnowledgeCard
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                description={item.description}
-                category={item.category}
-                resourceType={item.resource_type}
-                region={item.region}
-                publishedDate={item.published_date}
-              />
-            ))}
-
-          </div>
-        ) : (
-          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-
-            <h3 className="text-lg font-semibold text-slate-900">
-              No resources found
-            </h3>
-
-            <p className="mt-2 text-sm text-slate-500">
-              Try changing your search or filters.
-            </p>
-
-          </div>
-        )}
-
       </section>
-
     </main>
   );
 }
