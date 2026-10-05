@@ -46,11 +46,11 @@ export default function PublicationFilters() {
   }
 
   return (
-    <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5">
+    <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
       <div>
         <label
           htmlFor="publication-search"
-          className="mb-2 block text-sm font-medium text-slate-700"
+          className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
           Search
         </label>
@@ -63,7 +63,7 @@ export default function PublicationFilters() {
           onChange={(event) =>
             updateFilter("search", event.target.value)
           }
-          className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+          className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
         />
       </div>
 
@@ -112,14 +112,14 @@ function FilterSelect({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-slate-700">
+      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {label}
       </label>
 
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
       >
         {options.map((option) => (
           <option key={option} value={option}>

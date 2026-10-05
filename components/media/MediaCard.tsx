@@ -20,10 +20,10 @@ export default function MediaCard({
   return (
     <Link
       href={`/media/${id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-sm"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       {thumbnailUrl ? (
-        <div className="aspect-video overflow-hidden bg-slate-100">
+        <div className="aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
           <img
             src={thumbnailUrl}
             alt={title}
@@ -31,7 +31,7 @@ export default function MediaCard({
           />
         </div>
       ) : (
-        <div className="flex aspect-video items-center justify-center bg-slate-100">
+        <div className="flex aspect-video items-center justify-center bg-slate-100 dark:bg-slate-800">
           <span className="text-sm text-slate-400">
             Polar Science Media
           </span>
@@ -46,16 +46,16 @@ export default function MediaCard({
 
         </div>
 
-        <h2 className="mt-4 text-xl font-semibold leading-7 text-slate-900 group-hover:text-sky-700">
+        <h2 className="mt-4 text-xl font-semibold leading-7 text-slate-900 group-hover:text-sky-700 dark:text-slate-100">
           {title}
         </h2>
 
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
           {description ||
             "Explore this polar science media resource."}
         </p>
 
-        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-5 mt-6">
+        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-5 mt-6 dark:border-slate-800">
           <span className="text-xs text-slate-400">
             {publishedDate
               ? new Date(
@@ -68,7 +68,7 @@ export default function MediaCard({
               : "Date unavailable"}
           </span>
 
-          <span className="text-sm font-medium text-slate-900">
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
             View media →
           </span>
         </div>

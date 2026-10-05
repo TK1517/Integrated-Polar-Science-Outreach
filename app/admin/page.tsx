@@ -56,9 +56,9 @@ export default async function AdminPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <section className="border-b border-slate-200 bg-white">
+      <section className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="flex items-start justify-between gap-6">
             <div>
@@ -66,11 +66,11 @@ export default async function AdminPage() {
                 Administration
               </p>
 
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
+              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
                 Polar Science Portal
               </h1>
 
-              <p className="mt-4 max-w-2xl text-slate-500">
+              <p className="mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
                 Manage the portal&apos;s scientific knowledge, research,
                 expeditions and media content.
               </p>
@@ -83,7 +83,7 @@ export default async function AdminPage() {
 
       {/* Dashboard */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="text-xl font-semibold text-slate-900">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
           Content Overview
         </h2>
 
@@ -92,21 +92,21 @@ export default async function AdminPage() {
             <Link
               key={section.title}
               href={section.href}
-              className="rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-sky-300 hover:shadow-sm"
+              className="rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
               <p className="text-sm font-medium text-slate-500">
                 {section.title}
               </p>
 
-              <p className="mt-3 text-4xl font-semibold text-slate-950">
+              <p className="mt-3 text-4xl font-semibold text-slate-950 dark:text-white">
                 {section.count}
               </p>
 
-              <p className="mt-3 text-sm leading-6 text-slate-500">
+              <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 {section.description}
               </p>
 
-              <p className="mt-5 text-sm font-medium text-slate-900">
+              <p className="mt-5 text-sm font-medium text-slate-900 dark:text-slate-100">
                 Manage →
               </p>
             </Link>

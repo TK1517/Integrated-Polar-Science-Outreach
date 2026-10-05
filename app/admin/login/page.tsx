@@ -57,19 +57,19 @@ export default function AdminLoginPage() {
 }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 dark:bg-slate-950">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-8">
             <p className="text-sm font-semibold uppercase tracking-wider text-sky-600">
               Polar Science Portal
             </p>
 
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
               Admin Login
             </h1>
 
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Sign in to manage polar science content and resources.
             </p>
           </div>
@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="text-sm font-medium text-slate-700"
+                className="text-sm font-medium text-slate-700 dark:text-slate-300"
               >
                 Email
               </label>
@@ -91,14 +91,14 @@ export default function AdminLoginPage() {
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="admin@example.com"
                 required
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-sky-400"
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
 
             <div>
               <label
                 htmlFor="password"
-                className="text-sm font-medium text-slate-700"
+                className="text-sm font-medium text-slate-700 dark:text-slate-300"
               >
                 Password
               </label>
@@ -111,7 +111,7 @@ export default function AdminLoginPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Enter your password"
                 required
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-sky-400"
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-sky-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
             </div>
 

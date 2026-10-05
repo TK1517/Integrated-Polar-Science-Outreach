@@ -24,7 +24,7 @@ export default function PublicationCard({
   return (
     <Link
       href={`/publications/${id}`}
-      className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 transition duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-sm"
+      className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 transition duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-semibold uppercase tracking-wider text-sky-600">
@@ -32,18 +32,18 @@ export default function PublicationCard({
         </span>
 
         {year && (
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             {year}
           </span>
         )}
       </div>
 
-      <h2 className="mt-5 text-xl font-semibold leading-7 text-slate-900 group-hover:text-sky-700">
+      <h2 className="mt-5 text-xl font-semibold leading-7 text-slate-900 group-hover:text-sky-700 dark:text-slate-100">
         {title}
       </h2>
 
       {authors && (
-        <p className="mt-3 text-sm font-medium text-slate-600">
+        <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">
           {authors}
         </p>
       )}
@@ -54,18 +54,18 @@ export default function PublicationCard({
         </p>
       )}
 
-      <p className="mt-4 line-clamp-4 text-sm leading-6 text-slate-500">
+      <p className="mt-4 line-clamp-4 text-sm leading-6 text-slate-500 dark:text-slate-400">
         {abstract || "Explore this research publication."}
       </p>
 
-      <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-5 mt-6">
+      <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-5 mt-6 dark:border-slate-800">
         {region && (
           <span className="text-xs text-slate-400">
             {region}
           </span>
         )}
 
-        <span className="text-sm font-medium text-slate-900">
+        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
           View publication →
         </span>
       </div>
