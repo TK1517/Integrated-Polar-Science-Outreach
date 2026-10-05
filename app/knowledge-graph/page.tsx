@@ -87,6 +87,36 @@ type GraphRecord = {
   name?: string | null;
 };
 
+function normalizeGraphType(value: string) {
+  const type = value.trim().toLowerCase();
+
+  if (["resource", "resources", "knowledge_resource", "knowledge_resources"].includes(type)) {
+    return "resource";
+  }
+
+  if (["publication", "publications"].includes(type)) {
+    return "publication";
+  }
+
+  if (["expedition", "expeditions"].includes(type)) {
+    return "expedition";
+  }
+
+  if (["media", "medias"].includes(type)) {
+    return "media";
+  }
+
+  if (["topic", "topics"].includes(type)) {
+    return "topic";
+  }
+
+  return type;
+}
+
+function normalizeGraphId(value: string) {
+  return value.trim().toLowerCase();
+}
+
 
 
 export default function KnowledgeGraphPage() {
@@ -273,7 +303,15 @@ export default function KnowledgeGraphPage() {
         })
       );
 
-      setGraphEdges([...(graphEdgesResponse.data || []), ...legacyEdges]);
+      setGraphEdges(
+        [...(graphEdgesResponse.data || []), ...legacyEdges].map((edge) => ({
+          ...edge,
+          source_type: normalizeGraphType(edge.source_type),
+          source_id: normalizeGraphId(edge.source_id),
+          target_type: normalizeGraphType(edge.target_type),
+          target_id: normalizeGraphId(edge.target_id),
+        }))
+      );
       setPublications(publicationsResponse.data || []);
       setExpeditions(expeditionsResponse.data || []);
       setMedia(mediaResponse.data || []);
@@ -306,14 +344,14 @@ export default function KnowledgeGraphPage() {
     targetType: string,
     targetId: string
   ) =>
-    (edge.source_type === sourceType &&
-      edge.source_id === sourceId &&
+    (edge.source_type === normalizeGraphType(sourceType) &&
+      edge.source_id === normalizeGraphId(sourceId) &&
       edge.target_type === targetType &&
-      edge.target_id === targetId) ||
-    (edge.source_type === targetType &&
-      edge.source_id === targetId &&
-      edge.target_type === sourceType &&
-      edge.target_id === sourceId);
+      edge.target_id === normalizeGraphId(targetId)) ||
+    (edge.source_type === normalizeGraphType(targetType) &&
+      edge.source_id === normalizeGraphId(targetId) &&
+      edge.target_type === normalizeGraphType(sourceType) &&
+      edge.target_id === normalizeGraphId(sourceId));
 
   const resourceIdsForTopic = (topicId: string) =>
     new Set(
@@ -323,53 +361,53 @@ export default function KnowledgeGraphPage() {
             edgeConnects(edge, "topic", topicId, "resource", resource.id)
           )
         )
-        .map((resource) => resource.id)
+        .map((resource) => normalizeGraphId(resource.id))
     );
 
   const selectedResourceIds = selectedTopic
     ? resourceIdsForTopic(selectedTopic)
-    : new Set(resources.map((resource) => resource.id));
+    : new Set(resources.map((resource) => normalizeGraphId(resource.id)));
 
   const filteredResources = selectedTopic
-    ? resources.filter((resource) => selectedResourceIds.has(resource.id))
+    ? resources.filter((resource) =>
+        selectedResourceIds.has(normalizeGraphId(resource.id))
+      )
     : resources;
 
-  const connectedRecordCount = (recordType: string) =>
-    new Set(
-      graphEdges
-        .filter((edge) => {
-          const records =
-            recordType === "publication"
-              ? publications
-              : recordType === "expedition"
-                ? expeditions
-                : media;
-          const recordIds = new Set(records.map((record) => record.id));
-          const resourceId =
-            edge.source_type === "resource"
-              ? edge.source_id
-              : edge.target_type === "resource"
-                ? edge.target_id
-                : null;
-          const connectedType =
-            edge.source_type === "resource"
-              ? edge.target_type
-              : edge.target_type === "resource"
-                ? edge.source_type
-                : null;
-          const connectedId =
-            edge.source_type === recordType ? edge.source_id : edge.target_id;
-          return (
-            resourceId !== null &&
-            selectedResourceIds.has(resourceId) &&
-            connectedType === recordType &&
-            recordIds.has(connectedId)
-          );
-        })
-        .map((edge) =>
-          edge.source_type === recordType ? edge.source_id : edge.target_id
-        )
-    ).size;
+  const connectedRecordCount = (recordType: string) => {
+    const records =
+      recordType === "publication"
+        ? publications
+        : recordType === "expedition"
+          ? expeditions
+          : media;
+    const recordIds = new Set(
+      records.map((record) => normalizeGraphId(record.id))
+    );
+    const connectedIds = new Set<string>();
+
+    for (const edge of graphEdges) {
+      if (
+        edge.source_type === "resource" &&
+        edge.target_type === recordType &&
+        selectedResourceIds.has(edge.source_id) &&
+        recordIds.has(edge.target_id)
+      ) {
+        connectedIds.add(edge.target_id);
+      }
+
+      if (
+        edge.target_type === "resource" &&
+        edge.source_type === recordType &&
+        selectedResourceIds.has(edge.target_id) &&
+        recordIds.has(edge.source_id)
+      ) {
+        connectedIds.add(edge.source_id);
+      }
+    }
+
+    return connectedIds.size;
+  };
 
   const regionTopics = topics.filter((topic) =>
     ["arctic", "antarctica"].includes(topic.slug.toLowerCase())
