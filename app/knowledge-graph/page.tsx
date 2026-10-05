@@ -81,12 +81,6 @@ type GraphEdge = {
   relationship_type: string;
 };
 
-type GraphRecord = {
-  id: string;
-  title?: string | null;
-  name?: string | null;
-};
-
 function normalizeGraphType(value: string) {
   const type = value.trim().toLowerCase();
 
@@ -126,9 +120,6 @@ export default function KnowledgeGraphPage() {
   const [resources, setResources] = useState<Resource[]>([]);
 
   const [graphEdges, setGraphEdges] = useState<GraphEdge[]>([]);
-  const [publications, setPublications] = useState<GraphRecord[]>([]);
-  const [expeditions, setExpeditions] = useState<GraphRecord[]>([]);
-  const [media, setMedia] = useState<GraphRecord[]>([]);
 
 
 
@@ -180,9 +171,6 @@ export default function KnowledgeGraphPage() {
 
         resourcesResponse,
         graphEdgesResponse,
-        publicationsResponse,
-        expeditionsResponse,
-        mediaResponse,
 
       ] = await Promise.all([
 
@@ -225,21 +213,6 @@ export default function KnowledgeGraphPage() {
         supabase
           .from("graph_edges")
           .select("source_type,source_id,target_type,target_id,relationship_type"),
-
-        supabase
-          .from("publications")
-          .select("id,title")
-          .eq("published", true),
-
-        supabase
-          .from("expeditions")
-          .select("id,name")
-          .eq("published", true),
-
-        supabase
-          .from("media")
-          .select("id,title")
-          .eq("published", true),
 
       ]);
 
@@ -285,26 +258,6 @@ export default function KnowledgeGraphPage() {
         return;
       }
 
-      if (publicationsResponse.error) {
-        setError(publicationsResponse.error.message);
-        setLoading(false);
-        return;
-      }
-
-      if (expeditionsResponse.error) {
-        setError(expeditionsResponse.error.message);
-        setLoading(false);
-        return;
-      }
-
-      if (mediaResponse.error) {
-        setError(mediaResponse.error.message);
-        setLoading(false);
-        return;
-      }
-
-
-
       setTopics(topicsResponse.data || []);
 
       setResources(resourcesResponse.data || []);
@@ -328,12 +281,6 @@ export default function KnowledgeGraphPage() {
           target_id: normalizeGraphId(edge.target_id),
         }))
       );
-      setPublications(publicationsResponse.data || []);
-      setExpeditions(expeditionsResponse.data || []);
-      setMedia(mediaResponse.data || []);
-
-
-
       setLoading(false);
 
     }
@@ -426,23 +373,13 @@ export default function KnowledgeGraphPage() {
       : resources;
 
   const connectedRecordCount = (recordType: string) => {
-    const records =
-      recordType === "publication"
-        ? publications
-        : recordType === "expedition"
-          ? expeditions
-          : media;
-    const recordIds = new Set(
-      records.map((record) => normalizeGraphId(record.id))
-    );
     const connectedIds = new Set<string>();
 
     for (const edge of graphEdges) {
       if (
         edge.source_type === "resource" &&
         edge.target_type === recordType &&
-        evidenceResourceIds.has(edge.source_id) &&
-        recordIds.has(edge.target_id)
+        evidenceResourceIds.has(edge.source_id)
       ) {
         connectedIds.add(edge.target_id);
       }
@@ -450,8 +387,7 @@ export default function KnowledgeGraphPage() {
       if (
         edge.target_type === "resource" &&
         edge.source_type === recordType &&
-        evidenceResourceIds.has(edge.target_id) &&
-        recordIds.has(edge.source_id)
+        evidenceResourceIds.has(edge.target_id)
       ) {
         connectedIds.add(edge.source_id);
       }
