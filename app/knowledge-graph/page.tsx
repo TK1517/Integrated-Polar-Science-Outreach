@@ -138,6 +138,20 @@ export default function KnowledgeGraphPage() {
 
   );
 
+  const [selectedRegionTopic, setSelectedRegionTopic] = useState<string | null>(
+    null
+  );
+
+  const [selectedDomainTopic, setSelectedDomainTopic] = useState<string | null>(
+    null
+  );
+
+  const [focusedResourceId, setFocusedResourceId] = useState<string | null>(
+    null
+  );
+
+  const [refreshKey, setRefreshKey] = useState(0);
+
 
 
   const [loading, setLoading] = useState(true);
@@ -147,6 +161,8 @@ export default function KnowledgeGraphPage() {
 
 
   useEffect(() => {
+
+    void refreshKey;
 
     async function loadGraph() {
 
@@ -326,7 +342,7 @@ export default function KnowledgeGraphPage() {
 
     loadGraph();
 
-  }, []);
+  }, [refreshKey]);
 
 
 
@@ -337,42 +353,77 @@ export default function KnowledgeGraphPage() {
   );
 
 
-  const edgeConnects = (
-    edge: GraphEdge,
-    sourceType: string,
-    sourceId: string,
-    targetType: string,
-    targetId: string
-  ) =>
-    (edge.source_type === normalizeGraphType(sourceType) &&
-      edge.source_id === normalizeGraphId(sourceId) &&
-      edge.target_type === targetType &&
-      edge.target_id === normalizeGraphId(targetId)) ||
-    (edge.source_type === normalizeGraphType(targetType) &&
-      edge.source_id === normalizeGraphId(targetId) &&
-      edge.target_type === normalizeGraphType(sourceType) &&
-      edge.target_id === normalizeGraphId(sourceId));
+  const resourceIdsForTopic = (topicId: string) => {
+    const topicIds = new Set([normalizeGraphId(topicId)]);
 
-  const resourceIdsForTopic = (topicId: string) =>
-    new Set(
+    for (const edge of graphEdges) {
+      if (
+        edge.source_type === "topic" &&
+        edge.target_type === "topic" &&
+        edge.source_id === normalizeGraphId(topicId)
+      ) {
+        topicIds.add(edge.target_id);
+      }
+
+      if (
+        edge.source_type === "topic" &&
+        edge.target_type === "topic" &&
+        edge.target_id === normalizeGraphId(topicId)
+      ) {
+        topicIds.add(edge.source_id);
+      }
+    }
+
+    return new Set(
       resources
         .filter((resource) =>
-          graphEdges.some((edge) =>
-            edgeConnects(edge, "topic", topicId, "resource", resource.id)
+          graphEdges.some(
+            (edge) =>
+              (edge.source_type === "topic" &&
+                topicIds.has(edge.source_id) &&
+                edge.target_type === "resource" &&
+                edge.target_id === normalizeGraphId(resource.id)) ||
+              (edge.source_type === "resource" &&
+                edge.source_id === normalizeGraphId(resource.id) &&
+                edge.target_type === "topic" &&
+                topicIds.has(edge.target_id))
           )
         )
         .map((resource) => normalizeGraphId(resource.id))
     );
+  };
 
-  const selectedResourceIds = selectedTopic
-    ? resourceIdsForTopic(selectedTopic)
-    : new Set(resources.map((resource) => normalizeGraphId(resource.id)));
+  const selectedTopicGroups = [selectedRegionTopic, selectedDomainTopic].filter(
+    (topicId): topicId is string => Boolean(topicId)
+  );
 
-  const filteredResources = selectedTopic
-    ? resources.filter((resource) =>
-        selectedResourceIds.has(normalizeGraphId(resource.id))
-      )
-    : resources;
+  const allResourceIds = new Set(
+    resources.map((resource) => normalizeGraphId(resource.id))
+  );
+
+  const selectedResourceIds = selectedTopicGroups.reduce(
+    (resourceIds, topicId) => {
+      const topicResourceIds = resourceIdsForTopic(topicId);
+
+      return new Set(
+        [...resourceIds].filter((resourceId) =>
+          topicResourceIds.has(resourceId)
+        )
+      );
+    },
+    allResourceIds
+  );
+
+  const evidenceResourceIds = focusedResourceId
+    ? new Set([focusedResourceId])
+    : selectedResourceIds;
+
+  const filteredResources =
+    selectedTopicGroups.length > 0
+      ? resources.filter((resource) =>
+          selectedResourceIds.has(normalizeGraphId(resource.id))
+        )
+      : resources;
 
   const connectedRecordCount = (recordType: string) => {
     const records =
@@ -390,7 +441,7 @@ export default function KnowledgeGraphPage() {
       if (
         edge.source_type === "resource" &&
         edge.target_type === recordType &&
-        selectedResourceIds.has(edge.source_id) &&
+        evidenceResourceIds.has(edge.source_id) &&
         recordIds.has(edge.target_id)
       ) {
         connectedIds.add(edge.target_id);
@@ -399,7 +450,7 @@ export default function KnowledgeGraphPage() {
       if (
         edge.target_type === "resource" &&
         edge.source_type === recordType &&
-        selectedResourceIds.has(edge.target_id) &&
+        evidenceResourceIds.has(edge.target_id) &&
         recordIds.has(edge.source_id)
       ) {
         connectedIds.add(edge.source_id);
@@ -424,8 +475,14 @@ export default function KnowledgeGraphPage() {
       )
   );
 
-  const renderTopicCard = (topic: Topic, index: number) => {
-    const active = selectedTopic === topic.id;
+  const renderTopicCard = (
+    topic: Topic,
+    index: number,
+    group: "region" | "domain"
+  ) => {
+    const active =
+      (group === "region" ? selectedRegionTopic : selectedDomainTopic) ===
+      topic.id;
 
     const connectedCount = new Set(
       graphEdges.flatMap((edge) => {
@@ -443,7 +500,17 @@ export default function KnowledgeGraphPage() {
       <Reveal key={topic.id} delay={index * 0.06}>
         <button
           type="button"
-          onClick={() => setSelectedTopic(active ? null : topic.id)}
+          onClick={() => {
+            const nextTopic = active ? null : topic.id;
+            setSelectedTopic(nextTopic);
+            setFocusedResourceId(null);
+
+            if (group === "region") {
+              setSelectedRegionTopic(nextTopic);
+            } else {
+              setSelectedDomainTopic(nextTopic);
+            }
+          }}
           className="group w-full text-left"
         >
           <div
@@ -521,6 +588,15 @@ export default function KnowledgeGraphPage() {
                     : `${graphEdges.length} connected relationships`}
                 </p>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setRefreshKey((current) => current + 1)}
+                disabled={loading}
+                className="rounded-xl border border-cyan-400/20 px-4 py-3 text-xs font-semibold text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-400/10 disabled:cursor-wait disabled:opacity-50"
+              >
+                {loading ? "Refreshing..." : "Refresh graph"}
+              </button>
             </div>
           </Reveal>
         </div>
@@ -560,7 +636,9 @@ export default function KnowledgeGraphPage() {
                 <TopicSkeleton count={2} />
               ) : regionTopics.length > 0 ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {regionTopics.map(renderTopicCard)}
+                  {regionTopics.map((topic, index) =>
+                    renderTopicCard(topic, index, "region")
+                  )}
                 </div>
               ) : (
                 <EmptyLayer text="No polar region topics are currently available." />
@@ -581,7 +659,9 @@ export default function KnowledgeGraphPage() {
                 <TopicSkeleton count={3} />
               ) : domainTopics.length > 0 ? (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {domainTopics.map(renderTopicCard)}
+                  {domainTopics.map((topic, index) =>
+                    renderTopicCard(topic, index, "domain")
+                  )}
                 </div>
               ) : (
                 <EmptyLayer text="No scientific domain topics are currently available." />
@@ -589,7 +669,9 @@ export default function KnowledgeGraphPage() {
 
               {otherTopics.length > 0 && (
                 <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {otherTopics.map(renderTopicCard)}
+                  {otherTopics.map((topic, index) =>
+                    renderTopicCard(topic, index, "domain")
+                  )}
                 </div>
               )}
             </LayerShell>
@@ -639,10 +721,20 @@ export default function KnowledgeGraphPage() {
               ) : filteredResources.length > 0 ? (
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
                   {filteredResources.map((resource) => (
-                    <Link
+                    <button
                       key={resource.id}
-                      href={`/knowledge?search=${encodeURIComponent(resource.title)}`}
-                      className="group rounded-xl border border-white/10 bg-slate-950/40 p-4 transition-all duration-300 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04]"
+                      type="button"
+                      onClick={() => {
+                        setFocusedResourceId(normalizeGraphId(resource.id));
+                        document
+                          .getElementById("evidence-layer")
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      className={`group rounded-xl border p-4 text-left transition-all duration-300 hover:border-cyan-400/30 hover:bg-cyan-400/[0.04] ${
+                        focusedResourceId === normalizeGraphId(resource.id)
+                          ? "border-cyan-400/50 bg-cyan-400/[0.09]"
+                          : "border-white/10 bg-slate-950/40"
+                      }`}
                     >
                       <div className="flex gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/10 bg-cyan-400/[0.06]">
@@ -664,7 +756,10 @@ export default function KnowledgeGraphPage() {
                           )}
                         </div>
                       </div>
-                    </Link>
+                      <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-400">
+                        View connected evidence →
+                      </p>
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -683,38 +778,40 @@ export default function KnowledgeGraphPage() {
 
           <LayerConnector label="EVIDENCE" />
 
-          <Reveal>
-            <LayerShell
-              number="04"
-              eyebrow="Evidence Layer"
-              title="Research Evidence"
-              description="Move from knowledge resources to the observations, missions and scientific outputs they represent."
-            >
-              <div className="grid gap-3 md:grid-cols-3">
-                <EvidenceCard
-                  href="/publications"
-                  icon={<BookOpen className="h-4 w-4 text-cyan-300" />}
-                  title="Publications"
-                  count={connectedRecordCount("publication")}
-                  text="Connect scientific research with polar topics and documented findings."
-                />
-                <EvidenceCard
-                  href="/expeditions"
-                  icon={<FlaskConical className="h-4 w-4 text-cyan-300" />}
-                  title="Expeditions"
-                  count={connectedRecordCount("expedition")}
-                  text="Link field missions to the science they produce and the regions they explore."
-                />
-                <EvidenceCard
-                  href="/media"
-                  icon={<ImageIcon className="h-4 w-4 text-cyan-300" />}
-                  title="Media"
-                  count={connectedRecordCount("media")}
-                  text="Connect visual stories and observations with research and discovery."
-                />
-              </div>
-            </LayerShell>
-          </Reveal>
+          <div id="evidence-layer" className="scroll-mt-24">
+            <Reveal>
+              <LayerShell
+                number="04"
+                eyebrow="Evidence Layer"
+                title="Research Evidence"
+                description="Move from knowledge resources to the observations, missions and scientific outputs they represent."
+              >
+                <div className="grid gap-3 md:grid-cols-3">
+                  <EvidenceCard
+                    href="/publications"
+                    icon={<BookOpen className="h-4 w-4 text-cyan-300" />}
+                    title="Publications"
+                    count={connectedRecordCount("publication")}
+                    text="Connect scientific research with polar topics and documented findings."
+                  />
+                  <EvidenceCard
+                    href="/expeditions"
+                    icon={<FlaskConical className="h-4 w-4 text-cyan-300" />}
+                    title="Expeditions"
+                    count={connectedRecordCount("expedition")}
+                    text="Link field missions to the science they produce and the regions they explore."
+                  />
+                  <EvidenceCard
+                    href="/media"
+                    icon={<ImageIcon className="h-4 w-4 text-cyan-300" />}
+                    title="Media"
+                    count={connectedRecordCount("media")}
+                    text="Connect visual stories and observations with research and discovery."
+                  />
+                </div>
+              </LayerShell>
+            </Reveal>
+          </div>
 
           <LayerConnector label="DECISIONS" />
 
