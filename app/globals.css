@@ -180,6 +180,7 @@
 /* Public pages were designed with a dark-first palette. In light mode, map
    those shared surfaces to the same light palette used by Polar Challenge;
    dark mode keeps the original atmospheric treatment above unchanged. */
+html:not(.dark) .theme-page.bg-slate-950,
 html:not(.dark) .theme-page .bg-slate-950 {
   background-color: rgb(248 250 252);
 }
@@ -188,6 +189,7 @@ html:not(.dark) .theme-page .bg-slate-900 {
   background-color: rgb(241 245 249);
 }
 
+html:not(.dark) .theme-page.text-white,
 html:not(.dark) .theme-page .text-white {
   color: rgb(15 23 42);
 }
