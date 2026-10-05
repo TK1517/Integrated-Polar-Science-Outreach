@@ -44,7 +44,7 @@ export default async function ExpeditionsPage({
   const { data, error } = await query;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white dark:bg-slate-950">
+    <main className="theme-page min-h-screen bg-slate-950 text-white dark:bg-slate-950">
       <section className="relative overflow-hidden border-b border-white/10 bg-slate-950">
         <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl" />
         <div className="pointer-events-none absolute right-0 top-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
@@ -100,7 +100,6 @@ export default async function ExpeditionsPage({
                   location={expedition.location}
                   institution={expedition.institution}
                   startDate={expedition.start_date}
-                  endDate={expedition.end_date}
                   status={expedition.status}
                 />
               ))}

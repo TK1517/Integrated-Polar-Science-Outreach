@@ -39,7 +39,7 @@ export default async function Home() {
   ];
 
   return (
-    <div className="font-sans">
+    <div className="theme-page font-sans">
       <Hero />
 
       {/* Stats */}

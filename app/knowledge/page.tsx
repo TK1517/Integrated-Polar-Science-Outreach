@@ -53,7 +53,7 @@ export default async function KnowledgePage({
   const { data, error } = await query;
 
   return (
-    <main className="min-h-screen bg-slate-950">
+    <main className="theme-page min-h-screen bg-slate-950">
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-white/10 bg-slate-950">

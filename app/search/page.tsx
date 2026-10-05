@@ -21,7 +21,7 @@ export default async function SearchPage({
   const params = await searchParams;
   const search = params.q?.trim() || "";
 
-  let results: SearchResult[] = [];
+  const results: SearchResult[] = [];
 
   if (search) {
     const pattern = `%${search}%`;
@@ -106,7 +106,7 @@ export default async function SearchPage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white dark:bg-slate-950">
+    <main className="theme-page min-h-screen bg-slate-950 text-white dark:bg-slate-950">
       <section className="relative overflow-hidden border-b border-white/10 bg-slate-950">
         <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 animate-pulse rounded-full bg-sky-500/10 blur-3xl" />
         <div className="pointer-events-none absolute right-0 top-0 h-80 w-80 animate-pulse rounded-full bg-cyan-400/10 blur-3xl [animation-delay:700ms]" />

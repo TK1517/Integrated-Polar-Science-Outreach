@@ -38,7 +38,7 @@ export default async function MediaPage({
   const { data, error } = await query;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white dark:bg-slate-950">
+    <main className="theme-page min-h-screen bg-slate-950 text-white dark:bg-slate-950">
       {/* Header */}
       <section className="relative overflow-hidden border-b border-white/10 bg-slate-950">
         <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl" />
