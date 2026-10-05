@@ -372,6 +372,13 @@ export default function KnowledgeGraphPage() {
         )
       : resources;
 
+  const evidenceResourceQuery =
+    focusedResourceId || selectedTopicGroups.length > 0
+      ? `?resource_ids=${encodeURIComponent(
+          [...evidenceResourceIds].join(",")
+        )}`
+      : "";
+
   const connectedRecordCount = (recordType: string) => {
     const connectedIds = new Set<string>();
 
@@ -723,22 +730,22 @@ export default function KnowledgeGraphPage() {
                 description="Move from knowledge resources to the observations, missions and scientific outputs they represent."
               >
                 <div className="grid gap-3 md:grid-cols-3">
-                  <EvidenceCard
-                    href="/publications"
+                <EvidenceCard
+                  href={`/publications${evidenceResourceQuery}`}
                     icon={<BookOpen className="h-4 w-4 text-cyan-300" />}
                     title="Publications"
                     count={connectedRecordCount("publication")}
                     text="Connect scientific research with polar topics and documented findings."
                   />
-                  <EvidenceCard
-                    href="/expeditions"
+                <EvidenceCard
+                  href={`/expeditions${evidenceResourceQuery}`}
                     icon={<FlaskConical className="h-4 w-4 text-cyan-300" />}
                     title="Expeditions"
                     count={connectedRecordCount("expedition")}
                     text="Link field missions to the science they produce and the regions they explore."
                   />
-                  <EvidenceCard
-                    href="/media"
+                <EvidenceCard
+                  href={`/media${evidenceResourceQuery}`}
                     icon={<ImageIcon className="h-4 w-4 text-cyan-300" />}
                     title="Media"
                     count={connectedRecordCount("media")}

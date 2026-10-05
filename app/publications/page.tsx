@@ -1,6 +1,10 @@
 import { supabase } from "@/lib/supabase/client";
 import PublicationCard from "@/components/publications/PublicationCard";
 import PublicationFilters from "@/components/publications/PublicationFilters";
+import {
+  emptyUuid,
+  getConnectedRecordIds,
+} from "@/lib/knowledge-graph";
 
 type PublicationsPageProps = {
   searchParams: Promise<{
@@ -8,6 +12,7 @@ type PublicationsPageProps = {
     region?: string;
     area?: string;
     year?: string;
+    resource_ids?: string;
   }>;
 };
 
@@ -20,6 +25,10 @@ export default async function PublicationsPage({
   const region = params.region || "";
   const area = params.area || "";
   const year = params.year || "";
+  const connectedPublicationIds = await getConnectedRecordIds(
+    params.resource_ids,
+    "publication"
+  );
 
   let query = supabase
     .from("publications")
@@ -45,6 +54,15 @@ export default async function PublicationsPage({
 
   if (year) {
     query = query.eq("publication_year", Number(year));
+  }
+
+  if (connectedPublicationIds) {
+    query = query.in(
+      "id",
+      connectedPublicationIds.length > 0
+        ? connectedPublicationIds
+        : [emptyUuid]
+    );
   }
 
   const { data, error } = await query;

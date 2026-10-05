@@ -1,11 +1,16 @@
 import { supabase } from "@/lib/supabase/client";
 import MediaCard from "@/components/media/MediaCard";
 import MediaFilters from "@/components/media/MediaFilters";
+import {
+  emptyUuid,
+  getConnectedRecordIds,
+} from "@/lib/knowledge-graph";
 
 type MediaPageProps = {
   searchParams: Promise<{
     search?: string;
     type?: string;
+    resource_ids?: string;
   }>;
 };
 
@@ -16,6 +21,10 @@ export default async function MediaPage({
 
   const search = params.search || "";
   const type = params.type || "";
+  const connectedMediaIds = await getConnectedRecordIds(
+    params.resource_ids,
+    "media"
+  );
 
   let query = supabase
     .from("media")
@@ -33,6 +42,13 @@ export default async function MediaPage({
 
   if (type) {
     query = query.eq("media_type", type);
+  }
+
+  if (connectedMediaIds) {
+    query = query.in(
+      "id",
+      connectedMediaIds.length > 0 ? connectedMediaIds : [emptyUuid]
+    );
   }
 
   const { data, error } = await query;

@@ -1,12 +1,17 @@
 import { supabase } from "@/lib/supabase/client";
 import ExpeditionCard from "@/components/expeditions/ExpeditionCard";
 import ExpeditionFilters from "@/components/expeditions/ExpeditionFilters";
+import {
+  emptyUuid,
+  getConnectedRecordIds,
+} from "@/lib/knowledge-graph";
 
 type ExpeditionsPageProps = {
   searchParams: Promise<{
     search?: string;
     region?: string;
     status?: string;
+    resource_ids?: string;
   }>;
 };
 
@@ -18,6 +23,10 @@ export default async function ExpeditionsPage({
   const search = params.search || "";
   const region = params.region || "";
   const status = params.status || "";
+  const connectedExpeditionIds = await getConnectedRecordIds(
+    params.resource_ids,
+    "expedition"
+  );
 
   let query = supabase
     .from("expeditions")
@@ -39,6 +48,13 @@ export default async function ExpeditionsPage({
 
   if (status) {
     query = query.eq("status", status);
+  }
+
+  if (connectedExpeditionIds) {
+    query = query.in(
+      "id",
+      connectedExpeditionIds.length > 0 ? connectedExpeditionIds : [emptyUuid]
+    );
   }
 
   const { data, error } = await query;
