@@ -73,12 +73,18 @@ type Resource = {
 
 
 
-type ResourceTopic = {
+type GraphEdge = {
+  source_type: string;
+  source_id: string;
+  target_type: string;
+  target_id: string;
+  relationship_type: string;
+};
 
-  resource_id: string;
-
-  topic_id: string;
-
+type GraphRecord = {
+  id: string;
+  title?: string | null;
+  name?: string | null;
 };
 
 
@@ -89,7 +95,10 @@ export default function KnowledgeGraphPage() {
 
   const [resources, setResources] = useState<Resource[]>([]);
 
-  const [relationships, setRelationships] = useState<ResourceTopic[]>([]);
+  const [graphEdges, setGraphEdges] = useState<GraphEdge[]>([]);
+  const [publications, setPublications] = useState<GraphRecord[]>([]);
+  const [expeditions, setExpeditions] = useState<GraphRecord[]>([]);
+  const [media, setMedia] = useState<GraphRecord[]>([]);
 
 
 
@@ -124,6 +133,10 @@ export default function KnowledgeGraphPage() {
         relationshipsResponse,
 
         resourcesResponse,
+        graphEdgesResponse,
+        publicationsResponse,
+        expeditionsResponse,
+        mediaResponse,
 
       ] = await Promise.all([
 
@@ -163,6 +176,25 @@ export default function KnowledgeGraphPage() {
 
           }),
 
+        supabase
+          .from("graph_edges")
+          .select("source_type,source_id,target_type,target_id,relationship_type"),
+
+        supabase
+          .from("publications")
+          .select("id,title")
+          .eq("published", true),
+
+        supabase
+          .from("expeditions")
+          .select("id,name")
+          .eq("published", true),
+
+        supabase
+          .from("media")
+          .select("id,title")
+          .eq("published", true),
+
       ]);
 
 
@@ -201,13 +233,50 @@ export default function KnowledgeGraphPage() {
 
       }
 
+      if (graphEdgesResponse.error) {
+        setError(graphEdgesResponse.error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (publicationsResponse.error) {
+        setError(publicationsResponse.error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (expeditionsResponse.error) {
+        setError(expeditionsResponse.error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (mediaResponse.error) {
+        setError(mediaResponse.error.message);
+        setLoading(false);
+        return;
+      }
+
 
 
       setTopics(topicsResponse.data || []);
 
-      setRelationships(relationshipsResponse.data || []);
-
       setResources(resourcesResponse.data || []);
+
+      const legacyEdges: GraphEdge[] = (relationshipsResponse.data || []).map(
+        (relationship) => ({
+          source_type: "resource",
+          source_id: relationship.resource_id,
+          target_type: "topic",
+          target_id: relationship.topic_id,
+          relationship_type: "tagged_with",
+        })
+      );
+
+      setGraphEdges([...(graphEdgesResponse.data || []), ...legacyEdges]);
+      setPublications(publicationsResponse.data || []);
+      setExpeditions(expeditionsResponse.data || []);
+      setMedia(mediaResponse.data || []);
 
 
 
@@ -230,27 +299,78 @@ export default function KnowledgeGraphPage() {
   );
 
 
-  const filteredResources = selectedTopic
+  const edgeConnects = (
+    edge: GraphEdge,
+    sourceType: string,
+    sourceId: string,
+    targetType: string,
+    targetId: string
+  ) =>
+    (edge.source_type === sourceType &&
+      edge.source_id === sourceId &&
+      edge.target_type === targetType &&
+      edge.target_id === targetId) ||
+    (edge.source_type === targetType &&
+      edge.source_id === targetId &&
+      edge.target_type === sourceType &&
+      edge.target_id === sourceId);
 
-    ? resources.filter((resource) =>
-
-        relationships.some(
-
-          (relationship) =>
-
-            relationship.topic_id === selectedTopic &&
-
-            relationship.resource_id === resource.id
-
+  const resourceIdsForTopic = (topicId: string) =>
+    new Set(
+      resources
+        .filter((resource) =>
+          graphEdges.some((edge) =>
+            edgeConnects(edge, "topic", topicId, "resource", resource.id)
+          )
         )
+        .map((resource) => resource.id)
+    );
 
-      )
+  const selectedResourceIds = selectedTopic
+    ? resourceIdsForTopic(selectedTopic)
+    : new Set(resources.map((resource) => resource.id));
 
+  const filteredResources = selectedTopic
+    ? resources.filter((resource) => selectedResourceIds.has(resource.id))
     : resources;
 
+  const connectedRecordCount = (recordType: string) =>
+    new Set(
+      graphEdges
+        .filter((edge) => {
+          const records =
+            recordType === "publication"
+              ? publications
+              : recordType === "expedition"
+                ? expeditions
+                : media;
+          const recordIds = new Set(records.map((record) => record.id));
+          const resourceId =
+            edge.source_type === "resource"
+              ? edge.source_id
+              : edge.target_type === "resource"
+                ? edge.target_id
+                : null;
+          const connectedType =
+            edge.source_type === "resource"
+              ? edge.target_type
+              : edge.target_type === "resource"
+                ? edge.source_type
+                : null;
+          const connectedId =
+            edge.source_type === recordType ? edge.source_id : edge.target_id;
+          return (
+            resourceId !== null &&
+            selectedResourceIds.has(resourceId) &&
+            connectedType === recordType &&
+            recordIds.has(connectedId)
+          );
+        })
+        .map((edge) =>
+          edge.source_type === recordType ? edge.source_id : edge.target_id
+        )
+    ).size;
 
-
-  
   const regionTopics = topics.filter((topic) =>
     ["arctic", "antarctica"].includes(topic.slug.toLowerCase())
   );
@@ -269,9 +389,17 @@ export default function KnowledgeGraphPage() {
   const renderTopicCard = (topic: Topic, index: number) => {
     const active = selectedTopic === topic.id;
 
-    const connectedCount = relationships.filter(
-      (relationship) => relationship.topic_id === topic.id
-    ).length;
+    const connectedCount = new Set(
+      graphEdges.flatMap((edge) => {
+        if (edge.source_type === "topic" && edge.source_id === topic.id) {
+          return [`${edge.target_type}:${edge.target_id}`];
+        }
+        if (edge.target_type === "topic" && edge.target_id === topic.id) {
+          return [`${edge.source_type}:${edge.source_id}`];
+        }
+        return [];
+      })
+    ).size;
 
     return (
       <Reveal key={topic.id} delay={index * 0.06}>
@@ -350,7 +478,9 @@ export default function KnowledgeGraphPage() {
                   Graph Layers
                 </p>
                 <p className="mt-1 text-sm text-slate-300">
-                  {loading ? "Loading..." : "5 connected layers"}
+                  {loading
+                    ? "Loading..."
+                    : `${graphEdges.length} connected relationships`}
                 </p>
               </div>
             </div>
@@ -527,18 +657,21 @@ export default function KnowledgeGraphPage() {
                   href="/publications"
                   icon={<BookOpen className="h-4 w-4 text-cyan-300" />}
                   title="Publications"
+                  count={connectedRecordCount("publication")}
                   text="Connect scientific research with polar topics and documented findings."
                 />
                 <EvidenceCard
                   href="/expeditions"
                   icon={<FlaskConical className="h-4 w-4 text-cyan-300" />}
                   title="Expeditions"
+                  count={connectedRecordCount("expedition")}
                   text="Link field missions to the science they produce and the regions they explore."
                 />
                 <EvidenceCard
                   href="/media"
                   icon={<ImageIcon className="h-4 w-4 text-cyan-300" />}
                   title="Media"
+                  count={connectedRecordCount("media")}
                   text="Connect visual stories and observations with research and discovery."
                 />
               </div>
@@ -674,11 +807,13 @@ function EvidenceCard({
   href,
   icon,
   title,
+  count,
   text,
 }: {
   href: string;
   icon: ReactNode;
   title: string;
+  count: number;
   text: string;
 }) {
   return (
@@ -690,6 +825,9 @@ function EvidenceCard({
         <h3 className="mt-3 text-sm font-semibold text-white transition group-hover:text-cyan-300">
           {title}
         </h3>
+        <p className="mt-1 text-xs font-semibold text-cyan-300">
+          {count} connected records
+        </p>
         <p className="mt-1 text-xs leading-5 text-slate-500">{text}</p>
       </div>
     </Link>
