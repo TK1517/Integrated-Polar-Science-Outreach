@@ -1,15 +1,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/browser";
 
 const supabase = createClient();
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,7 +24,7 @@ export default function AdminLoginPage() {
     console.log("2. Calling Supabase...");
 
     const result = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     });
 
@@ -38,10 +35,21 @@ export default function AdminLoginPage() {
       return;
     }
 
+    if (!result.data.session) {
+      setError("Sign-in did not create a session. Please try again.");
+      return;
+    }
+
     console.log("4. Login successful");
 
-    router.push("/admin");
-    router.refresh();
+    const redirectedFrom = new URLSearchParams(window.location.search).get(
+      "redirectedFrom"
+    );
+    const destination = redirectedFrom?.startsWith("/")
+      ? redirectedFrom
+      : "/admin";
+
+    window.location.assign(destination);
   } catch (err) {
     console.error("5. Login exception:", err);
 
